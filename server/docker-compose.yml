@@ -1,0 +1,29 @@
+version: '3.6'
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+    - PGPASSWORD=f92u3htb34ncc1
+    volumes:
+    - .db_data:/var/lib/postgresql/data
+  node:
+    image: node
+    user: "node"
+    working_dir: /home/node/app
+    volumes:
+    - ./:/home/node/app
+    - /dev/tty.wchusbserial1420:/dev/tty.wchusbserial1420 
+    devices:
+    - /dev/tty.wchusbserial1420
+    ports:
+    - "8080:8080"
+    depends_on:
+    - "db"
+    links:
+    - "db:database"
+    command: npm run start
+    restart: always
+    privileged: true
+volumes:
+  db_data:
