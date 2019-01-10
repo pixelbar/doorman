@@ -16,6 +16,9 @@ const port = new SerialPort('/dev/tty.wchusbserial1420', { baudRate: 115200 })
 let firstCheck = false
 let secondCheck = false
 
+var challenge
+var page
+
 const parser = new Readline()
 port.pipe(parser)
 
@@ -53,8 +56,9 @@ const fn = async () => {
         firstCheck = true
         console.log("found match", element)
         // const hash = crypto.createHash('sha1').update(`C^AADC`).digest('HEX')
-        const page = String.fromCharCode(Math.round(Math.random() * (4 - 0) + 0))
-        const challenge = Math.random().toString(36).substr(2, 4)
+        page = String.fromCharCode(Math.round(Math.random() * (4 - 0) + 0))
+        challenge = Math.random().toString(36).substr(2, 4)
+        
         port.write(`C${page}${challenge}\n`)
         //      verify.update(element.privateKey)
         //      if(!verify.verify(result, signature)) {
@@ -69,9 +73,34 @@ const fn = async () => {
       if(secondCheck) {
         return
       }
+      let object = /([0-9A-Fa-f]{64}) ([0-9A-Fa-f]{40})/i.exec(result)
+      if (object === undefined || object[1] === undefined || object[2] === undefined) {
+    	// If no object could be parsed, we deny access
+      	port.write("N\n")
+      	return
+      }
+      let data = object[1]
+      let mac = object[2]
       console.log('going to open')
       secondCheck = true
-      const challenge = result.split(' ')[1]
+      if (challenge === undefined) {
+      // If no challenge was set, we deny access
+      	port.write("N\n")
+      	return
+      }
+      var wanted = "" // Here we need to calculate something!
+      
+      if (mac.toUpperCase() !== wanted.toUpperCase()) {
+        // If they do not match, we deny access
+      	port.write("N\n")
+      	return
+      }
+      
+      
+      
+      // Remove the challenge
+      delete challenge
+      //const challenge = result.split(' ')[1]
       // should do second challenge here!
       port.write("A\n")
       setInterval(() => {
