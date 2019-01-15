@@ -1,0 +1,5 @@
+Grey   ------------ GND
+Green  ------------ Green Light +
+Red    ------------ Red light +
+Yellow ------------ Yellow light +
+Purple ------------ Buzzer +
